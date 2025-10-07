@@ -23,9 +23,9 @@ class SimulationParameters:
 
     # размножение
     lambda_base: float = 1.2
-    max_children_per_female: int = 4
+    max_children_per_female: int = 4 # макс. число детей у самки за сезон
 
     # наследование/мутации
-    seg_sigma: float = 0.05
-    mutaion: float = 0.05
-    mutation_sigma: float = 0.04
+    seg_sigma: float = 0.05 # стандартное отклонение при наследовании (сегрегация)
+    mutaion: float = 0.05 # вероятность мутации
+    mutation_sigma: float = 0.04 # стандартное отклонение при появлении мутации

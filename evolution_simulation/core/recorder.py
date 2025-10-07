@@ -16,35 +16,35 @@ class TraitRecorder:
     Хранилище сырых записей (list of dict). Потом быстро превращаем в pandas.DataFrame.
     Здесь не делаем математику — только копирование нужных полей.
     """
-    rows: List[Dict[str, Any]] = field(default_factory=list)
+    rows: List[Dict[str, Any]] = field(default_factory=list) # список строк (каждая — словарь колонок)
 
-    def snapshot(self, t: int, species_list: List[Species]) -> None:
+    def snapshot(self, tick: int, species_list: List[Species]) -> None:
         """
         Снять срез на момент времени t.
         Для каждой живой особи сохраняем: вид, пол, возраст и ключевые признаки.
         Гибко: если нужно больше колонок — просто добавь ниже.
         """
-        for sp in species_list:
-            for ind in sp.individuals:
-                if not ind.alive:
+        for specie in species_list:
+            for individ in specie.individuals:
+                if not individ.alive:
                     continue
                 self.rows.append({
-                    "t": t,
-                    "species": sp.name,
-                    "sex": ind.sex,
-                    "age": ind.age,
-                    "color": ind.color,
-                    "speed": ind.speed,
-                    "lifestyle": ind.lifestyle,
-                    "activity": ind.activity,
-                    "aggression": ind.aggression,
-                    "strength": ind.strength,
+                    "tick": tick,
+                    "species": specie.name,
+                    "sex": individ.sex,
+                    "age": individ.age,
+                    "color": individ.color,
+                    "speed": individ.speed,
+                    "lifestyle": individ.lifestyle,
+                    "activity": individ.activity,
+                    "aggression": individ.aggression,
+                    "strength": individ.strength,
                 })
 
     def to_dataframe(self) -> pd.DataFrame:
         """Собрать pandas-таблицу из накопленных строк."""
         if not self.rows:
             return pd.DataFrame(columns=[
-                "t","species","sex","age","color","speed","lifestyle","activity","aggression","strength"
+                "tick","species","sex","age","color","speed","lifestyle","activity","aggression","strength"
             ])
         return pd.DataFrame(self.rows)

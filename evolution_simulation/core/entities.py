@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from typing import List, Literal
 
-Sex = Literal["F", "M"]
+Sex = Literal["F", "M"] # возможные значения пола
 
 @dataclass
 class Organism:
@@ -20,7 +20,8 @@ class Organism:
     alive: bool = True
     injury: bool = False
 
-    def clamp(self) -> None:
+    def clamp(self) -> None: #
+        """Ограничиваем параметры занчений в диапазоне от 0 до 1."""
         self.color = float(min(1.0, max(0.0, self.color)))
         self.lifestyle = float(min(1.0, max(0.0, self.lifestyle)))
         self.activity = float(min(1.0, max(0.0, self.activity)))

@@ -11,7 +11,7 @@ from typing import Optional, List, Dict
 
 def plot_speed_hist_at_time(
     df: pd.DataFrame,
-    t: int,
+    tick: int,
     species_order: Optional[List[str]] = None,
     bins: int = 30,
     title: Optional[str] = None,
@@ -29,28 +29,28 @@ def plot_speed_hist_at_time(
     - Оси и легенда подписаны, цветовую схему выбирает matplotlib автоматически.
     """
     # фильтруем по моменту времени
-    df_t = df[df["t"] == t]
-    if df_t.empty:
-        raise ValueError(f"В таблице нет данных для t={t}. Сначала снимите срез recorder.snapshot(t, ...).")
+    df_tick = df[df["t"] == tick]
+    if df_tick.empty:
+        raise ValueError(f"В таблице нет данных для t={tick}. Сначала снимите срез recorder.snapshot(t, ...).")
 
     # выбираем порядок видов
     if species_order is None:
-        species_order = list(df_t["species"].unique())
+        species_order = list(df_tick["species"].unique())
 
     plt.figure(figsize=(7.5, 4.5))
 
     # рисуем по видам
-    for sp_name in species_order:
-        speeds = df_t.loc[df_t["species"] == sp_name, "speed"].values
+    for specie_name in species_order:
+        speeds = df_tick.loc[df_tick["species"] == specie_name, "speed"].values
         if len(speeds) == 0:
             continue
         # density=False => классическая гистограмма по частотам;
         # alpha — полупрозрачность, чтобы гистограммы было видно поверх друг друга.
-        plt.hist(speeds, bins=bins, alpha=0.45, label=sp_name)
+        plt.hist(speeds, bins=bins, alpha=0.45, label=specie_name)
 
     plt.xlabel("speed")
     plt.ylabel("Count")
-    plt.title(title if title is not None else f"Распределение скорости по видам (t={t})")
+    plt.title(title if title is not None else f"Распределение скорости по видам (t={tick})")
     plt.legend(title="Species")
     plt.tight_layout()
     plt.show()

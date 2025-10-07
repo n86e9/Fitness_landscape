@@ -11,10 +11,10 @@ class Simulation:
     Управляет временем. Здесь простейшая смертность и возраст.
     Размножение — вызываем из reproduction.py на сезонных шагах.
     """
-    def __init__(self, env: Environment, species: List[Species]):
-        self.env = env
+    def __init__(self, enviroment: Environment, species: List[Species]):
+        self.enviroment = enviroment
         self.species = species
-        self.rng = np.random.default_rng(env.params.seed)
+        self.random_generator = np.random.default_rng(enviroment.params.seed)
         self.tick = 0
 
     def step(self) -> None:
@@ -27,21 +27,24 @@ class Simulation:
         Никакой «сложной математики».
         """
         self.tick += 1
-        self.env.tick()
-        p = self.env.params
+        self.enviroment.tick()
+        parameters = self.enviroment.params
 
-        for sp in self.species:
-            for ind in sp.individuals:
-                if not ind.alive:
+        for specie in self.species:
+            for individual in specie.individuals:
+                if not individual.alive: # если мёртв — пропускаем
                     continue
-                s = p.s_base - p.speed_survival_cost * (ind.speed ** 2)
-                s = max(0.0, min(1.0, s))
-                if self.rng.random() > s:
-                    ind.alive = False
+
+                surviveness = parameters.s_base - parameters.speed_survival_cost * (individual.speed ** 2) # рассчёт выживаемость
+                surviveness = max(0.0, min(1.0, surviveness))
+
+                if self.random_generator.random() > surviveness: 
+                    individual.alive = False
                     continue
-                if self.rng.random() < p.injury_rate:
-                    ind.injury = True
-                ind.age += 1
+
+                if self.random_generator.random() < parameters.injury_rate:
+                    individual.injury = True
+                individual.age += 1
 
     def season_step(self) -> None:
         """
@@ -49,18 +52,19 @@ class Simulation:
         Если захочешь запретить межвидовое скрещивание — оно и так отсутствует,
         потому что мы размножаем по каждому виду отдельно.
         """
-        for sp in self.species:
-            seasonal_reproduction_for_species(sp, self.rng, self.env.params)
+        for specie in self.species:
+            seasonal_reproduction_for_species(specie, self.random_generator, self.enviroment.params)
         # сброс травм к началу нового сезона (по желанию)
-        for sp in self.species:
-            for ind in sp.individuals:
-                ind.injury = False
+        
+        for specie in self.species:
+            for individ in specie.individuals:
+                individ.injury = False
 
     def run(self, n_ticks: int) -> None:
         for _ in range(n_ticks):
             self.step()
-            if self.tick % self.env.params.season_length == 0:
+            if self.tick % self.enviroment.params.season_length == 0:
                 self.season_step()
 
     def population_size(self) -> int:
-        return sum(sp.alive_count() for sp in self.species)
+        return sum(specie.alive_count() for specie in self.species)
