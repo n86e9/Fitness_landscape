@@ -29,7 +29,7 @@ def plot_speed_hist_at_time(
     - Оси и легенда подписаны, цветовую схему выбирает matplotlib автоматически.
     """
     # фильтруем по моменту времени
-    df_tick = df[df["t"] == tick]
+    df_tick = df[df["tick"] == tick]
     if df_tick.empty:
         raise ValueError(f"В таблице нет данных для t={tick}. Сначала снимите срез recorder.snapshot(t, ...).")
 
