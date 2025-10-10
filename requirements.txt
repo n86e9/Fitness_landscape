@@ -1,0 +1,9 @@
+streamlit
+matplotlib
+streamlit
+plotly
+numpy
+dataclasses
+typing
+pandas
+evolution_simulation
