@@ -1,8 +1,6 @@
-# core/recorder.py
 """
-TraitRecorder — простой сборщик срезов признаков во времени.
-Идея: после каждого tика (или раз в несколько тиков) вызываем .snapshot(tick, species_list),
-а потом строим графики по полученной таблице.
+TraitRecorder — сборщик срезов признаков во времени.
+Снимаем срез после каждого tика (и/или после сезона), потом строим графики.
 """
 
 from dataclasses import dataclass, field
@@ -12,36 +10,35 @@ from .entities import Organism
 
 @dataclass
 class TraitRecorder:
-    """
-    Хранилище сырых записей (list of dict). Потом быстро превращаем в pandas.DataFrame.
-    Здесь не анализируем данные — только копирование нужных полей.
-    """
-    # список строк (каждая — словарь колонок)
+    # сырые записи (каждая строка — dict)
     rows: List[Dict[str, Any]] = field(default_factory=list)
 
-    # core/recorder.py (фрагмент)
     def snapshot(self, tick: int, population: List[Organism]) -> None:
-        for individ in population:
-            if getattr(individ, "alive", True) is False:
+        """
+        Снять срез на момент времени tick.
+        Для каждой ЖИВОЙ особи сохраняем пол, возраст и ключевые признаки.
+        """
+        for ind in population:
+            # мы уже удаляем мёртвых в Simulation, но на всякий случай:
+            if not ind.alive:
                 continue
             self.rows.append({
                 "tick": tick,
-                "sex": individ.sex,
-                "age": individ.age,
-                "injury": individ.injury,
-                "color": individ.color,
-                "speed": individ.speed,
-                "lifestyle": individ.lifestyle,
-                "activity": individ.activity,
-                "aggression": individ.aggression,
-                "strength": individ.strength,
+                "sex": ind.sex,
+                "age": ind.age,
+                "color": ind.color,
+                "speed": ind.speed,
+                "lifestyle": ind.lifestyle,
+                "activity": ind.activity,
+                "aggression": ind.aggression,
+                "strength": ind.strength,
+                "injury": float(ind.injury),
             })
 
-
     def to_dataframe(self) -> pd.DataFrame:
-        """Собираем pandas-таблицу из накопленных строк с признаками и их значениями."""
-
-        if not self.rows: # если нет данных, высылаем предупреждение
-            return "!!! Недостаточно данных для построения DataFrame !!!"
-        
+        """Собираем pandas-таблицу из накопленных строк (или пустую, если данных нет)."""
+        if not self.rows:
+            return pd.DataFrame(columns=[
+                "tick","sex","age","color","speed","lifestyle","activity","aggression","strength","injury"
+            ])
         return pd.DataFrame(self.rows)
