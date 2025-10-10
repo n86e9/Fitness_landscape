@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import pandas as pd
 import streamlit as st
-import plotly.graph_objs as go
+from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 
 # --- модули симуляции ---
