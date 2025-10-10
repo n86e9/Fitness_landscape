@@ -247,7 +247,7 @@ st.title("Evolution Simulation — Streamlit Dashboard")
 
 with st.sidebar:
     # базовые контролы
-    ticks = st.slider("Ticks to simulate", 50, 2000, 400, step=10)
+    ticks = st.slider("Ticks to simulate", 20, 200, 100, step=10)
     run_btn = st.button("Run simulation", use_container_width=True)
 
     st.markdown("---")
