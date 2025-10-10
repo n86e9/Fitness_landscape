@@ -8,11 +8,11 @@ def selection_score(speed: float, aggression: float, p: SimulationParams) -> flo
     Гауссов холм по (speed, aggression): максимум в (opt_speed, opt_aggr).
     Возвращает множитель ∈ (0, 1].
     """
-    ds = (speed - p.opt_speed)
-    da = (aggression - p.opt_aggr)
-    ss = max(p.sel_sigma_speed, 1e-6)
+    ds = (speed - p.opt_speed) # отклонение по скорости от оптимума
+    da = (aggression - p.opt_aggr) # отклонение по агрессии от оптимума
+    ss = max(p.sel_sigma_speed, 1e-6) 
     sa = max(p.sel_sigma_aggr,  1e-6)
-    z = (ds*ds)/(2.0*ss*ss) + (da*da)/(2.0*sa*sa)
+    z = (ds*ds)/(2.0*ss*ss) + (da*da)/(2.0*sa*sa) # комбинированное отклонение
     return float(np.exp(- p.sel_weight * z))
 
 def make_child(mother: Organism, father: Organism,
@@ -22,12 +22,11 @@ def make_child(mother: Organism, father: Organism,
       trait_child = 0.5*(mom + dad) + N(0, seg_sigma), редкие мутации, обрезка диапазонов.
     """
     def avg(a, b): 
+        # среднее родителей + нормальное отклонение
         return 0.5 * (a + b) + rng.normal(0.0, params.seg_sigma)
 
     color      = avg(mother.color, father.color)
     speed      = avg(mother.speed, father.speed)
-    lifestyle  = avg(mother.lifestyle, father.lifestyle)
-    activity   = avg(mother.activity, father.activity)
     aggression = avg(mother.aggression, father.aggression)
     strength   = avg(mother.strength, father.strength)
 
@@ -41,14 +40,12 @@ def make_child(mother: Organism, father: Organism,
         return x
 
     color      = mutate(color, limit_01=True)
-    lifestyle  = mutate(lifestyle, limit_01=True)
-    activity   = mutate(activity, limit_01=True)
     speed      = mutate(speed, nonneg=True)
     aggression = mutate(aggression, nonneg=True)
     strength   = mutate(strength, nonneg=True)
 
     sex = 'F' if rng.random() < 0.5 else 'M'
-    baby = Organism(color, speed, lifestyle, activity, aggression, strength, sex)
+    baby = Organism(color, speed, aggression, strength, sex)
     baby.clamp()
     return baby
 

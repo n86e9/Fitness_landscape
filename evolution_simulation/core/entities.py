@@ -9,8 +9,6 @@ class Organism:
     """
     color: float        # [0,1]
     speed: float        # >=0
-    lifestyle: float    # [0,1]
-    activity: float     # [0,1]
     aggression: float   # >=0
     strength: float     # >=0
     sex: Literal["F", "M"]
@@ -23,8 +21,6 @@ class Organism:
     def clamp(self) -> None:
         """Обрезаем значения признаков в допустимые диапазоны."""
         self.color      = float(np.clip(self.color, 0.0, 1.0))
-        self.lifestyle  = float(np.clip(self.lifestyle, 0.0, 1.0))
-        self.activity   = float(np.clip(self.activity, 0.0, 1.0))
         self.speed      = float(max(0.0, self.speed))
         self.aggression = float(max(0.0, self.aggression))
         self.injury     = float(np.clip(self.injury, 0.0, 1.0))

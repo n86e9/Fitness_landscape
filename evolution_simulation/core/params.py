@@ -14,37 +14,38 @@ class SimulationParams:
     """
 
     # --- время / ёмкость ---
-    season_length: int = 6
-    K: float = 800.0
-    seed: Optional[int] = 123
+    season_length: int = 6 # тиков в сезоне
+    K: float = 800.0 # ёмкость среды (макс. численность организмов)
+    seed: Optional[int] = 123 # сид для генератора случайных чисел
 
     # --- выживание за тик ---
-    surv_base: float = 0.994
-    speed_surv_cost: float = 0.003
-    injury_survival_penalty: float = 0.25
-    age_hard_cap: int = 120
+    surv_base: float = 0.994 # базовая вероятность выживания за тик
+    speed_surv_cost: float = 0.003 # стоимость выживания за скорость
+    injury_survival_penalty: float = 0.25 # штраф за травму
+    age_hard_cap: int = 120 # жесткий предел возраста
 
     # --- травма ---
-    injury_severity_rate: float = 0.010
-    injury_recovery_rate: float = 0.020
-    rho_enc_base: float = 1.0 / 90.0
-    injury_step_cap: float = 0.02
+    injury_severity_rate: float = 0.010 # базовая скорость получения травмы
+    injury_recovery_rate: float = 0.020 # базовая скорость восстановления травмы
+    rho_enc_base: float = 1.0 / 90.0 # базовая скорость получения травмы
+    injury_step_cap: float = 0.02 # ограничение на шаг травмы
 
     # --- размножение ---
-    lambda_base: float = 1.30
-    dens_alpha: float = 3.0
-    max_children_per_female: int = 3
+    lambda_base: float = 1.30 # базовая фертильность
+    dens_alpha: float = 3.0 # коэффициент плотностного ограничения при размножении
+    max_children_per_female: int = 3 # макс. число детей за сезон на одну самку
+
     # ВАЖНО: это поле используется в reproduction.py и передаётся из Streamlit
     injury_fertility_penalty: float = 0.40
 
     # --- наследование и мутации ---
-    seg_sigma: float = 0.05
-    mutation: float = 0.05
-    mutation_sigma: float = 0.04
+    seg_sigma: float = 0.05 # стандартное отклонение для наследования признаков
+    mutation: float = 0.05 # вероятность мутации
+    mutation_sigma: float = 0.04 # стандартное отклонение для мутаций
 
-    # --- стабилизирующий отбор (гора) ---
-    opt_speed: float = 1.8
-    opt_aggr: float  = 0.3
-    sel_sigma_speed: float = 0.6
-    sel_sigma_aggr:  float = 0.4
-    sel_weight: float = 1.2
+    # --- стабилизирующий отбор (гора) - делаем фильтрацию по признакам в процессе размножения ---
+    opt_speed: float = 1.8 # оптимальное значение скорости
+    opt_aggr: float  = 0.3 # оптимальное значение агрессии
+    sel_sigma_speed: float = 0.6 # стандартное отклонение для селекции по скорости
+    sel_sigma_aggr:  float = 0.4 # стандартное отклонение для селекции по агрессии
+    sel_weight: float = 11.2 # вес селекции

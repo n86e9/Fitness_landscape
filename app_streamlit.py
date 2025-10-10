@@ -13,20 +13,19 @@ from evolution_simulation.core.entities import Organism
 from evolution_simulation.core.simulation import Simulation
 from evolution_simulation.core.recorder import TraitRecorder
 
-ALL_TRAITS = ["speed", "aggression", "injury", "strength", "color", "lifestyle", "activity", "age"]
+# Убрали lifestyle и activity
+ALL_TRAITS = ["speed", "aggression", "injury", "strength", "color", "age"]
 
 # ================== УТИЛИТЫ СИМУЛЯЦИИ ==================
 
 def init_population(n: int, rng: np.random.Generator) -> list[Organism]:
-    """Инициализируем популяцию с правдоподобной вариацией признаков."""
+    """Инициализируем популяцию с правдоподобной вариацией признаков (без lifestyle/activity)."""
     pop = []
     for _ in range(n):
         sex = 'F' if rng.random() < 0.5 else 'M'
         ind = Organism(
             color=float(np.clip(rng.normal(0.5, 0.1), 0, 1)),
             speed=float(max(0.0, rng.normal(1.8, 0.5))),
-            lifestyle=float(np.clip(rng.normal(0.5, 0.1), 0, 1)),
-            activity=float(np.clip(rng.normal(0.7, 0.15), 0, 1)),
             aggression=float(max(0.0, rng.normal(0.3, 0.15))),
             strength=float(max(0.0, rng.normal(1.0, 0.3))),
             sex=sex,
@@ -54,14 +53,30 @@ def run_simulation(total_ticks: int, params: SimulationParams, seed: int = 7, N0
 
 # ================== ГРАФИКИ (Plotly) ==================
 
-def make_population_fig(df: pd.DataFrame) -> go.Figure:
-    """Численность популяции по времени."""
+def make_population_fig(df: pd.DataFrame,
+                        show_male: bool,
+                        show_female: bool) -> go.Figure:
+    """Численность популяции по времени: Total + опционально M/F."""
     if "tick" not in df.columns and "t" in df.columns:
         df = df.rename(columns={"t": "tick"})
-    counts = df.groupby("tick").size().reset_index(name="N")
     fig = go.Figure()
+
+    # Total
+    counts = df.groupby("tick").size().reset_index(name="N")
     fig.add_trace(go.Scatter(x=counts["tick"], y=counts["N"], mode="lines", name="Total N"))
-    fig.update_layout(title="Population size over time", xaxis_title="tick", yaxis_title="N", template="plotly_white")
+
+    # By sex (если есть колонка sex)
+    if "sex" in df.columns:
+        if show_male:
+            male = df[df["sex"] == "M"].groupby("tick").size().reindex(counts["tick"], fill_value=0)
+            fig.add_trace(go.Scatter(x=counts["tick"], y=male.values, mode="lines", name="Males"))
+        if show_female:
+            female = df[df["sex"] == "F"].groupby("tick").size().reindex(counts["tick"], fill_value=0)
+            fig.add_trace(go.Scatter(x=counts["tick"], y=female.values, mode="lines", name="Females"))
+
+    fig.update_layout(title="Population size over time",
+                      xaxis_title="tick", yaxis_title="N", template="plotly_white",
+                      legend={"orientation":"h","y":1.02,"yanchor":"bottom"})
     fig.update_xaxes(showgrid=True); fig.update_yaxes(showgrid=True)
     return fig
 
@@ -87,10 +102,12 @@ def make_final_histograms(df: pd.DataFrame, traits: list[str], bins: int = 30) -
         df = df.rename(columns={"t": "tick"})
     if df.empty:
         return go.Figure()
+
     tmax = int(df["tick"].max())
     dft = df[df["tick"] == tmax]
     traits = [tr for tr in traits if tr in dft.columns]
     cols = max(1, len(traits))
+
     fig = make_subplots(rows=1, cols=cols, subplot_titles=traits)
     for i, tr in enumerate(traits, start=1):
         fig.add_trace(
@@ -166,8 +183,8 @@ def make_fitness_surface(df: pd.DataFrame, xtrait: str, ytrait: str,
         else:
             return (0.0, 1.0)
 
-    # расширяем/сжимаем базовый интервал по коэффициенту xy_span
     def expand_range(lo, hi, tr, mult):
+        """Расширяем/сжимаем базовый интервал по коэффициенту xy_span."""
         dom_lo, dom_hi = trait_domain(tr)
         base_w = max(hi - lo, 1e-6)
         center = 0.5 * (lo + hi)
@@ -230,6 +247,11 @@ with st.sidebar:
     run_btn = st.button("Run simulation", use_container_width=True)
 
     st.markdown("---")
+    # Переключатели показа полов на графике численности
+    show_male = st.checkbox("Show males on N(t)", value=True)
+    show_female = st.checkbox("Show females on N(t)", value=True)
+
+    st.markdown("---")
     traits_selected = st.multiselect("Time-series traits", ALL_TRAITS, default=["speed","aggression","injury"])
     stat = st.radio("Statistic", ["mean", "median", "std"], horizontal=True)
 
@@ -272,29 +294,27 @@ if run_btn or "df" not in st.session_state:
 
 df = st.session_state["df"]
 
-# ------- Первая строка: N(t) и временные ряды признаков -------
+# ------- Первая строка: N(t) (с опциями M/F) и временные ряды признаков -------
 colA, colB = st.columns(2)
 with colA:
-    st.plotly_chart(make_population_fig(df), use_container_width=True)
+    st.plotly_chart(make_population_fig(df, show_male=show_male, show_female=show_female),
+                    use_container_width=True)
 with colB:
     st.plotly_chart(make_traits_timeseries_fig(df, traits_selected, stat), use_container_width=True)
 
-# ------- Вторая строка: слева гистограммы, справа 3D-ландшафт + ИНЛАЙН-РЫЧАГИ масштаба -------
+# ------- Вторая строка: слева гистограммы, справа 3D-ландшафт + инлайн-рычаги масштаба -------
 colL, colR = st.columns([1, 2], gap="large")
 with colL:
     st.plotly_chart(make_final_histograms(df, hist_traits, hist_bins), use_container_width=True)
-
 with colR:
     st.subheader("Landscape scale")
     c1, c2, c3 = st.columns(3)
-    # ИНЛАЙН-контролы масштаба — отдельные ключи, чтобы не конфликтовали
     xy_span = c1.slider("XY span ×", 1.0, 5.0, 3.0, step=0.5, key="xy_span_inline",
                         help="Расширяет охват по осям X/Y — холм выглядит меньше.")
     z_scale = c2.slider("Z scale ×", 0.1, 1.0, 0.5, step=0.05, key="z_scale_inline",
                         help="Масштаб высоты по оси Z — уменьшает высоту холма.")
     normalize_inline = c3.checkbox("Normalize [0,1]", value=normalize, key="normalize_inline",
                                    help="Нормировать поверхность по Z в [0,1] перед масштабированием.")
-
     st.plotly_chart(
         make_fitness_surface(
             df, xtrait, ytrait, age_const, injury_const, DEFAULT_PARAMS,

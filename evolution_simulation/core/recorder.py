@@ -22,14 +22,14 @@ class TraitRecorder:
             # мы уже удаляем мёртвых в Simulation, но на всякий случай:
             if not ind.alive:
                 continue
+
+            # фиксируем признаки особи в строку
             self.rows.append({
                 "tick": tick,
                 "sex": ind.sex,
                 "age": ind.age,
                 "color": ind.color,
                 "speed": ind.speed,
-                "lifestyle": ind.lifestyle,
-                "activity": ind.activity,
                 "aggression": ind.aggression,
                 "strength": ind.strength,
                 "injury": float(ind.injury),
@@ -39,6 +39,6 @@ class TraitRecorder:
         """Собираем pandas-таблицу из накопленных строк (или пустую, если данных нет)."""
         if not self.rows:
             return pd.DataFrame(columns=[
-                "tick","sex","age","color","speed","lifestyle","activity","aggression","strength","injury"
+                "tick","sex","age","color","speed","aggression","strength","injury"
             ])
         return pd.DataFrame(self.rows)
