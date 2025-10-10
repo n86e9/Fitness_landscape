@@ -1,6 +1,10 @@
 # app_streamlit.py
 # Запуск: streamlit run app_streamlit.py
 
+# в самом начале файла, до from evolution_simulation...
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import numpy as np
 import pandas as pd
 import streamlit as st
