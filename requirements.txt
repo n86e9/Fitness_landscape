@@ -1,9 +1,5 @@
-streamlit
-matplotlib
-streamlit
-plotly
-numpy
-dataclasses
-typing
-pandas
-evolution_simulation
+streamlit==1.37.1
+plotly==5.22.0
+numpy==1.26.4
+pandas==2.2.2
+matplotlib==3.8.4
